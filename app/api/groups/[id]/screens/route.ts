@@ -4,10 +4,13 @@ import { addScreen, getGroup, getScreens } from '@/lib/store'
 import type { Screen } from '@/lib/types'
 import sharp from 'sharp'
 
+const MAX_SCREENSHOT_BYTES = 10 * 1024 * 1024
+const ACCEPTED_SCREENSHOT_TYPES = new Set(['image/png', 'image/jpeg', 'image/webp'])
+
 export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id: groupId } = await params
-    if (!getGroup(groupId)) {
+    if (!await getGroup(groupId)) {
       return NextResponse.json({ error: 'Group not found' }, { status: 404 })
     }
 
@@ -17,6 +20,12 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
 
     if (!name || !file) {
       return NextResponse.json({ error: 'name and screenshot are required' }, { status: 400 })
+    }
+    if (!ACCEPTED_SCREENSHOT_TYPES.has(file.type)) {
+      return NextResponse.json({ error: 'screenshot must be PNG, JPEG, or WebP' }, { status: 400 })
+    }
+    if (file.size > MAX_SCREENSHOT_BYTES) {
+      return NextResponse.json({ error: 'screenshot must be 10MB or smaller' }, { status: 413 })
     }
 
     const buffer = await file.arrayBuffer()
@@ -33,7 +42,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
       height: meta.height ?? 1080,
       uploadedAt: new Date().toISOString(),
     }
-    addScreen(screen)
+    await addScreen(screen)
 
     return NextResponse.json({ ...screen, screenshotBase64: '[omitted]' }, { status: 201 })
   } catch (error) {
@@ -44,6 +53,6 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
 
 export async function GET(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id: groupId } = await params
-  const list = getScreens(groupId).map(s => ({ ...s, screenshotBase64: '[omitted]' }))
+  const list = (await getScreens(groupId)).map(s => ({ ...s, screenshotBase64: '[omitted]' }))
   return NextResponse.json(list)
 }
