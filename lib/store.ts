@@ -1,48 +1,34 @@
 import type { ScreenGroup, Screen, SyncReport } from './types'
+import { getSyncRepository } from './storage'
 
-const groups = new Map<string, ScreenGroup>()
-const screens = new Map<string, Screen[]>()
-const reports = new Map<string, SyncReport>()
-
-export function createGroup(group: ScreenGroup): void {
-  groups.set(group.id, group)
-  screens.set(group.id, [])
+export async function createGroup(group: ScreenGroup): Promise<void> {
+  await getSyncRepository().createGroup(group)
 }
 
-export function getGroup(id: string): ScreenGroup | undefined {
-  return groups.get(id)
+export async function getGroup(id: string): Promise<ScreenGroup | undefined> {
+  return getSyncRepository().getGroup(id)
 }
 
-export function listGroups(): ScreenGroup[] {
-  return Array.from(groups.values()).sort(
-    (a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
-  )
+export async function listGroups(): Promise<ScreenGroup[]> {
+  return getSyncRepository().listGroups()
 }
 
-export function addScreen(screen: Screen): void {
-  const list = screens.get(screen.groupId) ?? []
-  list.push(screen)
-  screens.set(screen.groupId, list)
-  const group = groups.get(screen.groupId)
-  if (group) {
-    group.updatedAt = new Date().toISOString()
-  }
+export async function addScreen(screen: Screen): Promise<void> {
+  await getSyncRepository().addScreen(screen)
 }
 
-export function getScreens(groupId: string): Screen[] {
-  return screens.get(groupId) ?? []
+export async function getScreens(groupId: string): Promise<Screen[]> {
+  return getSyncRepository().getScreens(groupId)
 }
 
-export function saveReport(report: SyncReport): void {
-  reports.set(report.id, report)
+export async function saveReport(report: SyncReport): Promise<void> {
+  await getSyncRepository().saveReport(report)
 }
 
-export function getReport(id: string): SyncReport | undefined {
-  return reports.get(id)
+export async function getReport(id: string): Promise<SyncReport | undefined> {
+  return getSyncRepository().getReport(id)
 }
 
-export function listReports(): SyncReport[] {
-  return Array.from(reports.values()).sort(
-    (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-  )
+export async function listReports(): Promise<SyncReport[]> {
+  return getSyncRepository().listReports()
 }

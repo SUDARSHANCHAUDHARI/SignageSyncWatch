@@ -10,10 +10,10 @@ const SYSTEM_PROMPT = `You are a digital signage synchronization expert. Given a
 export async function POST(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id: groupId } = await params
-    const group = getGroup(groupId)
+    const group = await getGroup(groupId)
     if (!group) return NextResponse.json({ error: 'Group not found' }, { status: 404 })
 
-    const screens = getScreens(groupId)
+    const screens = await getScreens(groupId)
     if (screens.length < 2) {
       return NextResponse.json({ error: 'At least 2 screens required to compare' }, { status: 400 })
     }
@@ -87,7 +87,7 @@ export async function POST(_req: NextRequest, { params }: { params: Promise<{ id
       aiAnalysis,
       createdAt: new Date().toISOString(),
     }
-    saveReport(report)
+    await saveReport(report)
 
     return NextResponse.json({
       ...report,

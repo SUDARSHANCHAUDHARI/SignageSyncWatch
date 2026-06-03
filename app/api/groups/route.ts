@@ -15,7 +15,7 @@ export async function POST(request: NextRequest) {
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     }
-    createGroup(group)
+    await createGroup(group)
     return NextResponse.json(group, { status: 201 })
   } catch (error) {
     console.error('POST /api/groups error:', error)
@@ -24,5 +24,5 @@ export async function POST(request: NextRequest) {
 }
 
 export async function GET() {
-  return NextResponse.json(listGroups())
+  return NextResponse.json(await listGroups())
 }
