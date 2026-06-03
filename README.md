@@ -31,5 +31,18 @@ SIGNAGE_STORAGE_DRIVER=file
 
 Use a persistent mounted volume for `SIGNAGE_DATA_DIR` in production. Set `SIGNAGE_STORAGE_DRIVER=memory` only for disposable demos.
 
+## Production Checks
+
+```bash
+pnpm typecheck
+pnpm build
+```
+
+## Release Notes
+
+- Deploy with `SIGNAGE_DATA_DIR` set to a persistent writable volume.
+- Keep `SIGNAGE_STORAGE_DRIVER=file` for production.
+- Do not commit `.env`, `.env.local`, uploaded screenshots, or generated `.signage-data` files.
+
 ## License
 MIT — SudarshanTechLabs
