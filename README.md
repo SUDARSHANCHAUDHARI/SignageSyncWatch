@@ -16,8 +16,20 @@ Digital signage synchronization monitoring platform. Upload screenshots from mul
 
 ```bash
 pnpm install
+cp .env.example .env.local
 pnpm dev
 ```
+
+## Production Storage
+
+`SignageSyncWatch` stores groups, uploaded screens, and comparison reports in file-backed JSON under `SIGNAGE_DATA_DIR`.
+
+```env
+SIGNAGE_DATA_DIR=.signage-data
+SIGNAGE_STORAGE_DRIVER=file
+```
+
+Use a persistent mounted volume for `SIGNAGE_DATA_DIR` in production. Set `SIGNAGE_STORAGE_DRIVER=memory` only for disposable demos.
 
 ## License
 MIT — SudarshanTechLabs
