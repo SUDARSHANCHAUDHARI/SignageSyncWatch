@@ -1,18 +1,35 @@
 # SignageSyncWatch
 
-Digital signage synchronization monitoring platform. Upload screenshots from multiple displays and detect visual desynchronization — screen drift, playlist mismatch, delayed transitions, and frozen playback.
+![Next.js](https://img.shields.io/badge/Next.js-15-black?logo=nextdotjs)
+![TypeScript](https://img.shields.io/badge/TypeScript-5.x-3178C6?logo=typescript)
+![License](https://img.shields.io/badge/License-MIT-blue)
 
-## Use Cases
-- Signage QA teams verifying multi-screen deployments
-- AV integrators checking video wall sync
-- Retail/restaurant operations monitoring display fleets
+Synchronization monitoring app for multi-screen digital signage. Upload screenshots from several displays, compare visual drift, and save sync reports.
 
-## Stack
-- Next.js (App Router) + TypeScript
+## What It Does
+
+SignageSyncWatch helps QA teams, AV integrators, and operators check whether screens in a group are showing the same content at the same moment. It stores screen groups, uploaded screenshots, comparisons, and reports with durable file-backed storage.
+
+## Features
+
+- Create screen groups for video walls or multi-display deployments.
+- Upload screenshots from each screen.
+- Compare visual differences with pixel-level image analysis.
+- Detect outliers and sync drift.
+- Save reports for later review.
+- Generate AI-assisted sync analysis when a provider key is configured.
+
+## Tech Stack
+
+- Next.js 15 App Router
+- React 19
+- TypeScript strict mode
 - Tailwind CSS
-- pnpm
+- `sharp`, `pngjs`, and `pixelmatch` for image processing
+- Anthropic SDK and OpenAI SDK
+- File-backed JSON storage through a repository interface
 
-## Getting Started
+## Setup
 
 ```bash
 pnpm install
@@ -20,16 +37,25 @@ cp .env.example .env.local
 pnpm dev
 ```
 
-## Production Storage
+Open `http://localhost:3000`.
 
-`SignageSyncWatch` stores groups, uploaded screens, and comparison reports in file-backed JSON under `SIGNAGE_DATA_DIR`.
+## Environment Variables
 
 ```env
+AI_PROVIDER=claude
+ANTHROPIC_API_KEY=your_key_here
+OPENAI_API_KEY=your_key_here
 SIGNAGE_DATA_DIR=.signage-data
 SIGNAGE_STORAGE_DRIVER=file
 ```
 
-Use a persistent mounted volume for `SIGNAGE_DATA_DIR` in production. Set `SIGNAGE_STORAGE_DRIVER=memory` only for disposable demos.
+## Production Storage
+
+Production uses file-backed JSON under `SIGNAGE_DATA_DIR`.
+
+- Mount `SIGNAGE_DATA_DIR` as persistent writable storage.
+- Keep `SIGNAGE_STORAGE_DRIVER=file` in production.
+- Use `SIGNAGE_STORAGE_DRIVER=memory` only for disposable demos.
 
 ## Production Checks
 
@@ -40,9 +66,14 @@ pnpm build
 
 ## Release Notes
 
-- Deploy with `SIGNAGE_DATA_DIR` set to a persistent writable volume.
-- Keep `SIGNAGE_STORAGE_DRIVER=file` for production.
-- Do not commit `.env`, `.env.local`, uploaded screenshots, or generated `.signage-data` files.
+- Do not commit `.env`, `.env.local`, uploaded screenshots, reports, or generated `.signage-data` files.
+- Keep AI provider keys in the deployment environment.
+- Verify the persistent storage volume before public release.
+
+## Author
+
+Built by [Sudarshan Chaudhari](https://github.com/SUDARSHANCHAUDHARI) for **SudarshanTechLabs**.
 
 ## License
-MIT — SudarshanTechLabs
+
+MIT
