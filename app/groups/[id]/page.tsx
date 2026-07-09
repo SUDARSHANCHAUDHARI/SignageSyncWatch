@@ -2,6 +2,8 @@
 
 import { useState, useEffect, use } from 'react'
 import type { ScreenGroup } from '@/lib/types'
+import ApiKeySettings from '@/components/ApiKeySettings'
+import { getAiHeaders } from '@/lib/apiKey'
 
 interface ScreenMeta {
   id: string
@@ -59,7 +61,7 @@ export default function GroupDetailPage({ params }: { params: Promise<{ id: stri
   async function analyze() {
     if (analyzing || screens.length < 2) return
     setAnalyzing(true)
-    const res = await fetch(`/api/groups/${id}/analyze`, { method: 'POST' })
+    const res = await fetch(`/api/groups/${id}/analyze`, { method: 'POST', headers: { ...getAiHeaders() } })
     const data = (await res.json()) as ReportMeta
     setReport(data)
     setAnalyzing(false)
@@ -73,7 +75,10 @@ export default function GroupDetailPage({ params }: { params: Promise<{ id: stri
 
   return (
     <div className="max-w-3xl mx-auto px-4 py-10">
-      <a href="/groups" className="text-gray-500 hover:text-gray-300 text-sm">← Groups</a>
+      <div className="flex items-center justify-between gap-4">
+        <a href="/groups" className="text-gray-500 hover:text-gray-300 text-sm">← Groups</a>
+        <ApiKeySettings />
+      </div>
       <h1 className="text-2xl font-bold mt-2 mb-6">{group?.name ?? 'Loading…'}</h1>
 
       {/* Upload screen */}
