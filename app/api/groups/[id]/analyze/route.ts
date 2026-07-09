@@ -2,14 +2,18 @@ import { NextRequest, NextResponse } from 'next/server'
 import { nanoid } from 'nanoid'
 import { getGroup, getScreens, saveReport } from '@/lib/store'
 import { compareScreenshots } from '@/lib/compare'
-import { chat } from '@/lib/ai'
+import { chat, type AIProvider } from '@/lib/ai'
 import type { SyncReport, CompareResult } from '@/lib/types'
 
 const SYSTEM_PROMPT = `You are a digital signage synchronization expert. Given a sync analysis report with scores, diff percentages, and outlier screens, write a concise 2-3 sentence summary explaining the sync health and what needs attention. Be practical and direct.`
 
-export async function POST(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id: groupId } = await params
+
+    // Bring-your-own-key: supplied by the user per request, never stored server-side.
+    const apiKey = req.headers.get('x-api-key') ?? ''
+    const provider: AIProvider = req.headers.get('x-ai-provider') === 'openai' ? 'openai' : 'claude'
     const group = await getGroup(groupId)
     if (!group) return NextResponse.json({ error: 'Group not found' }, { status: 404 })
 
@@ -68,7 +72,7 @@ export async function POST(_req: NextRequest, { params }: { params: Promise<{ id
 
     let aiAnalysis = ''
     try {
-      aiAnalysis = await chat(SYSTEM_PROMPT, summaryText)
+      aiAnalysis = await chat(SYSTEM_PROMPT, summaryText, { provider, apiKey })
     } catch {
       aiAnalysis = syncScore >= 90
         ? 'All screens are well synchronized. No action required.'
