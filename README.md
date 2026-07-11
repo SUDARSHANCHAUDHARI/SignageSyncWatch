@@ -25,48 +25,42 @@ SignageSyncWatch helps QA teams, AV integrators, and operators check whether scr
 - React 19
 - TypeScript strict mode
 - Tailwind CSS
-- `sharp`, `pngjs`, and `pixelmatch` for image processing
-- Anthropic SDK and OpenAI SDK
-- File-backed JSON storage through a repository interface
+- Browser **Canvas** + `pixelmatch` for image comparison (client-side)
+- Anthropic SDK and OpenAI SDK (called with the visitor's own key)
+- Cloudflare KV storage through a repository interface
 
 ## Setup
 
 ```bash
 pnpm install
-cp .env.example .env.local
 pnpm dev
 ```
 
-Open `http://localhost:3000`.
+Open `http://localhost:3000`. No `.env` is required — see Configuration below.
 
-## Environment Variables
+## Configuration
 
-```env
-AI_PROVIDER=claude
-ANTHROPIC_API_KEY=your_key_here
-OPENAI_API_KEY=your_key_here
-SIGNAGE_DATA_DIR=.signage-data
-SIGNAGE_STORAGE_DRIVER=file
-```
+**Image comparison runs in the browser.** Screenshots are decoded, resized, and
+diffed with the Canvas API + `pixelmatch` on the client (no server-side native
+image library), so the app runs on the edge/Workers runtime.
 
-## Production Storage
+**AI is bring-your-own-key.** There is no server-side API key. Each visitor adds
+their own Anthropic or OpenAI key in the app's Settings; it is stored only in
+their browser and sent per request (`x-api-key` header). Without a key the sync
+summary falls back to a computed message.
 
-Production uses file-backed JSON under `SIGNAGE_DATA_DIR`.
+**Storage:** groups, screens, and reports persist in **Cloudflare KV** (binding
+`SIGNAGE_KV`). Local development also ships `file` and `memory` drivers via
+`SIGNAGE_STORAGE_DRIVER`.
 
-- Mount `SIGNAGE_DATA_DIR` as persistent writable storage.
-- Keep `SIGNAGE_STORAGE_DRIVER=file` in production.
-- Use `SIGNAGE_STORAGE_DRIVER=memory` only for disposable demos.
+## Deployment
 
-### Hosting Notes
+Deployed on **Cloudflare Pages** as a static export + Pages Functions:
 
-File-backed storage is suitable for a VPS, Docker host, or platform with a persistent disk. For example:
-
-```env
-SIGNAGE_STORAGE_DRIVER=file
-SIGNAGE_DATA_DIR=/data/signage-sync-watch
-```
-
-If you deploy on Vercel or another serverless host, do not rely on local file writes for saved groups, screenshots, or reports. Serverless filesystems can reset between deployments or function instances. For that setup, use this release as the public app/code release and add a managed database adapter before depending on saved report history in production.
+- Build command `npx next build`, output directory `out`.
+- Compatibility flag `nodejs_compat`.
+- Bind a KV namespace as `SIGNAGE_KV`.
+- Live at `signagesyncwatch.sudarshantechlabs.com`.
 
 ## Production Checks
 
