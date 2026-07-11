@@ -40,7 +40,7 @@ export default function ReportsPage() {
         {reports.map(r => (
           <a
             key={r.id}
-            href={`/reports/${r.id}`}
+            href={`/reports/view?id=${r.id}`}
             className="flex items-center justify-between bg-gray-900 border border-gray-800 hover:border-cyan-700 rounded-xl px-5 py-4 transition"
           >
             <div>
