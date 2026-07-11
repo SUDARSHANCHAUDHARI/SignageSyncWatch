@@ -68,7 +68,7 @@ export default function GroupsPage() {
         {groups.map(g => (
           <a
             key={g.id}
-            href={`/groups/${g.id}`}
+            href={`/groups/view?id=${g.id}`}
             className="block bg-gray-900 border border-gray-800 hover:border-emerald-700 rounded-xl p-4 transition"
           >
             <div className="font-medium text-gray-200">{g.name}</div>

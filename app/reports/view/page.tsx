@@ -1,6 +1,7 @@
 'use client'
 
-import { useState, useEffect, use } from 'react'
+import { Suspense, useState, useEffect } from 'react'
+import { useSearchParams } from 'next/navigation'
 
 interface ComparisonSummary {
   screenA: { name: string }
@@ -22,19 +23,23 @@ interface ReportDetail {
   createdAt: string
 }
 
-export default function ReportDetailPage({ params }: { params: Promise<{ id: string }> }) {
-  const { id } = use(params)
+function ReportDetailView() {
+  const id = useSearchParams().get('id') ?? ''
   const [report, setReport] = useState<ReportDetail | null>(null)
+  const [error, setError] = useState('')
 
   useEffect(() => {
-    fetch('/api/reports')
-      .then(r => r.json())
-      .then((data: ReportDetail[]) => {
-        const found = data.find(r => r.id === id)
-        if (found) setReport(found)
+    if (!id) return
+    fetch(`/api/reports/${id}`)
+      .then((r) => r.json())
+      .then((data: ReportDetail & { error?: string }) => {
+        if (data.error) setError(data.error)
+        else setReport(data)
       })
+      .catch(() => setError('Failed to load report.'))
   }, [id])
 
+  if (error) return <div className="p-10 text-red-400 text-sm text-center">{error}</div>
   if (!report) return <div className="p-10 text-gray-600 text-sm text-center">Loading…</div>
 
   const scoreColor = report.syncScore >= 90 ? 'text-emerald-400'
@@ -78,7 +83,7 @@ export default function ReportDetailPage({ params }: { params: Promise<{ id: str
             <div className="text-xs text-gray-600 mb-3">
               {c.diffPixels.toLocaleString()} px diff / {c.totalPixels.toLocaleString()} total ({c.diffPercent}%)
             </div>
-            {c.diffImageBase64 && (
+            {c.diffImageBase64 && c.diffImageBase64 !== '[omitted]' && (
               <img
                 src={`data:image/png;base64,${c.diffImageBase64}`}
                 alt="Diff"
@@ -89,5 +94,13 @@ export default function ReportDetailPage({ params }: { params: Promise<{ id: str
         ))}
       </div>
     </div>
+  )
+}
+
+export default function ReportDetailPage() {
+  return (
+    <Suspense>
+      <ReportDetailView />
+    </Suspense>
   )
 }
