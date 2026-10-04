@@ -18,3 +18,5 @@ Thumbs.db
 graphify-out/
 SignageSyncWatch*.md
 .signage-data/
+
+repoguard-results/
